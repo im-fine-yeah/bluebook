@@ -8,7 +8,9 @@ main { max-width: 510px; margin: auto; padding: 20px 16px 32px; }
 .book-title small { color: #9bd8ff; font-size: 3.7cqw; margin-top: 1.5cqw; }
 .home .book-title strong { font-size: 7cqw; }
 .imprint, .edition, .duration { position: absolute; font-size: 3.6cqw; letter-spacing: .08em; }
-.imprint { left: 33%; top: 6%; }
+.imprint { inset-inline: 9%; top: 7.5%; display: flex; align-items: center; justify-content: center; gap: 5cqw; font-weight: 600; }
+.imprint > span { white-space: nowrap; }
+.cover .imprint img { width: 19cqw; height: auto; aspect-ratio: auto; }
 .edition { right: 17%; top: 60%; }
 .duration { left: 33%; top: 71%; }
 .intro, .foot, .result-head { text-align: center; }
@@ -20,6 +22,7 @@ main { max-width: 510px; margin: auto; padding: 20px 16px 32px; }
 h1 { font-size: clamp(20px, 5vw, 27px); line-height: 1.5; margin: 0 0 16px; }
 h2 { font-size: 18px; margin: 0 0 6px; }
 .details p { margin: 0 0 22px; }
+.details .axis-description { margin: 8px 0 0; font-size: 14px; }
 progress { display: block; width: 100%; height: 8px; accent-color: #1557a8; margin: 0 0 20px; }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .choice { display: flex; align-items: center; gap: 10px; min-height: 48px; border: 1px solid #cbdcf1; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; cursor: pointer; }

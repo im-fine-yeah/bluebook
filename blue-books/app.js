@@ -29,7 +29,7 @@ function cover(title, mode) {
   return `<div class="cover ${mode}" aria-label="${title}">
     <img src="${mode === "home" ? "cover-home.jpg" : original ? "cover.jpg" : "cover-result.jpg"}" alt="">
     ${original ? "" : `<div class="book-title"><strong>${title}</strong>${mode === "home" ? "<small>16 种医学生学习画像</small>" : ""}</div>`}
-    ${mode === "home" ? '<span class="edition">校园版</span><span class="duration">20 道题 · 约 3 分钟</span>' : ""}
+    ${mode === "home" ? '<span class="imprint"><img src="cover-logos.png" alt=""><span>交医学联·小医生Joy</span></span><span class="edition">校园版</span><span class="duration">20 道题 · 约 3 分钟</span>' : ""}
   </div>`;
 }
 
@@ -151,28 +151,35 @@ function tie(scores, zeros, step) {
   });
 }
 
-function analysisFor(scores, directions) {
-  const ranked = [0, 1, 2, 3].sort((a, b) => Math.abs(scores[b]) - Math.abs(scores[a]));
-  const [strongest, ...rest] = ranked;
-  const strongestCopy = [
-    ["你最有成就感的时候，是终于把一个原来讲不清的问题讲通。", "最让你有成就感的是学到的东西真的帮你做成了一件事。"],
-    ["任务撞在一起时，你更愿意把整块时间留给最关键的难点。", "任务撞在一起时，你更愿意让几项都推进，再回头深挖。"],
-    ["读陌生病例时，你习惯先把变化按过程串起来。", "读陌生病例时，你习惯先并排比较几种可能的解释。"],
-    ["小组开工时，你喜欢先商量共同框架，再分头推进。", "小组开工时，你喜欢先让各自的思路成形，再一起取舍。"]
+function analysisFor(score, direction, i) {
+  const [, a, b] = axes[i];
+  const preference = direction === "A" ? a : b;
+  if (score === 0) return `两边得分相同，补选时你更倾向「${preference}」。`;
+  if (Math.abs(score) <= weakScore) return `两种方式你都用得上，这次略偏向「${preference}」。`;
+  const descriptions = [
+    ["弄明白一个困惑已久的问题，最容易让你觉得学得值。", "学到的知识真的帮你做成一件事时，你更有成就感。"],
+    ["时间不够时，你倾向把精力集中在最影响后续的难点上。", "任务一多，你倾向先让各项都有进展，再回头补重点。"],
+    ["读病例时，你习惯先理清变化的顺序，再追问它们怎么连起来。", "读病例时，你倾向先摆出几种解释，再找能区分它们的线索。"],
+    ["和同学合作时，你更习惯先对齐共同思路，再各自推进。", "和同学合作时，你更喜欢先让各自的想法成形，再一起比较和整合。"]
   ];
-  const sentence = i => strongestCopy[i][directions[i] === "A" ? 0 : 1];
-  const weakest = [...rest].sort((a, b) => Math.abs(scores[a]) - Math.abs(scores[b]) || a - b)[0];
-  const [name, a, b] = axes[weakest];
-  const preference = directions[weakest] === "A" ? a : b;
-  const first = Math.abs(scores[strongest]) <= weakScore
-    ? "这次作答的四项倾向都比较接近中间，这本书代表你略偏向的组合。"
-    : sentence(strongest);
-  const second = scores[weakest] === 0
-    ? `${name}方面，作答接近中间，补选时你更倾向「${preference}」。`
-    : Math.abs(scores[weakest]) <= weakScore
-      ? `${name}方面，两种方式都用得上，这次略偏向「${preference}」。`
-      : sentence(rest[0]);
-  return first + second;
+  return descriptions[i][direction === "A" ? 0 : 1];
+}
+
+function overviewFor(scores, directions) {
+  const habits = [
+    ["弄懂原来卡住的地方", "看到学过的东西派上用场"],
+    ["留整段时间处理一个关键难点", "让手头几项任务都先往前走"],
+    ["沿病程把变化串起来", "把几种可能解释放在一起比较"],
+    ["先和大家商量一个共同框架", "先听各自的想法，再一起整合"]
+  ];
+  const leadIns = ["学习时，你", "时间紧时，你", "读病例时，你", "做小组任务时，你"];
+  const strongest = Math.max(...scores.map(Math.abs));
+  return scores.map((score, i) => {
+    const habit = habits[i][directions[i] === "A" ? 0 : 1];
+    if (score === 0) return `${leadIns[i]}两边得分相同，补选更偏向「${habit}」。`;
+    const strength = Math.abs(score) <= weakScore ? "稍偏向" : Math.abs(score) === strongest ? "尤其倾向" : "倾向";
+    return `${leadIns[i]}${strength}${habit}。`;
+  }).join("");
 }
 
 function result(scores) {
@@ -180,15 +187,17 @@ function result(scores) {
   const code = directions.join("");
   const [title, portrait, quote] = books[code];
   recordFirstResult(code);
-  render(`<header class="result-head"><p class="eyebrow">你的蓝色教材</p><h1 tabindex="-1">你是《${title}》</h1></header>
+  render(`<header class="result-head"><p class="eyebrow">你的“天选”教材</p><h1 tabindex="-1">你是《${title}》</h1></header>
     ${cover(title, title === "医学统计学" ? "original" : "matched")}
     <section class="panel details"><blockquote class="book-quote">「${quote}」</blockquote>
     <h2>你和这本书的相似之处</h2><p>${portrait}</p>
-    <h2>你的答题里</h2><p>${analysisFor(scores, directions)}</p>
+    <h2>你的答题画像</h2><p>${overviewFor(scores, directions)}</p>
+    <h2>你的四项答题倾向</h2>
     ${scores.map((score, i) => `<div class="axis">
       <strong>${axes[i][0]}</strong>${Math.abs(score) <= weakScore ? '<small>两边都用得上</small>' : ""}
       <div class="scale" role="meter" aria-label="${axes[i][0]}" aria-valuemin="${-maxAxisScore}" aria-valuemax="${maxAxisScore}" aria-valuenow="${score}" aria-valuetext="${score === 0 ? "居中" : "偏向" + axes[i][score > 0 ? 1 : 2]}"><i style="--position:${50 - 50 * score / maxAxisScore}%"></i></div>
       <div class="ends"><span>${axes[i][1]}</span><span>${axes[i][2]}</span></div>
+      <p class="axis-description">${analysisFor(score, directions[i], i)}</p>
     </div>`).join("")}</section>
     <button class="primary full" id="restart">再测一次</button><p class="foot">医学生学习方式趣味测验</p>`);
   bind("restart", home);

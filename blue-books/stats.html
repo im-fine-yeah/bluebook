@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>教材结果统计</title><link rel="stylesheet" href="style.css">
+<script defer src="data.js"></script><script defer src="stats.js"></script></head>
+<body><main><section class="panel">
+<h1>教材结果统计</h1>
+<p>按浏览器去重，只统计首次完成的结果。</p>
+<form><label for="password">管理密码</label>
+<input id="password" type="password" required><button class="primary">查询 / 刷新</button></form>
+<p id="status" role="status"></p>
+<table hidden><thead><tr><th scope="col">教材</th><th scope="col">份数</th></tr></thead><tbody></tbody></table>
+<button id="download" hidden>导出 CSV</button>
+</section></main></body></html>
